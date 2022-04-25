@@ -1,0 +1,13 @@
+*           text=auto
+*.txt		text
+*.json		text
+*.md		text
+*.lua       text
+*.cs        text
+*.vcproj	text eol=crlf
+*.sh		text eol=lf
+*.cmd		text eol=crlf
+*.bat		text eol=crlf
+unity/Assets/Data/BuildConfig.txt  text eol=lf
+*.png		-text
+*.tga		-text

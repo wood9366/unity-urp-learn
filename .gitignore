@@ -1,0 +1,18 @@
+﻿# Unity工程
+/Library
+/UserSettings
+/Logs
+/Temp
+/obj
+/*.sln
+/*.csproj
+*.csproj.user
+.vscode
+.vs
+.idea
+.gradle
+*.swp
+
+# 发布目录
+/_iOS
+/_Android
