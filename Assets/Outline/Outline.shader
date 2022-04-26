@@ -3,9 +3,10 @@ Shader "Custom/URP/Outline"
     Properties
     {
         _OutlineColor ("Outline Color", Color) = (0, 1, 0, 1)
+        _OutlineBackColor ("Outline Back Color", Color) = (1, 0, 0, 1)
         _OutlineSize ("Outline Size", Range(1, 10)) = 1
         _ZBias ("Bias", Range(0.001, 0.01)) = 0.001
-        [Toggle(OUTLINE_DEPTH_FEATURE)] _OutlineDepthFeature ("Outline Depth Feature", Float) = 0
+        [KeywordEnum(COMMON, DEPTH, BACK)] Mode ("Mode", Float) = 0
     }
 
     SubShader
@@ -18,7 +19,7 @@ Shader "Custom/URP/Outline"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma shader_feature_local __ OUTLINE_DEPTH_FEATURE
+            #pragma shader_feature_local MODE_COMMON MODE_DEPTH MODE_BACK
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
@@ -30,12 +31,15 @@ Shader "Custom/URP/Outline"
 
             struct Varyings
             {
-                float4 posScreen : TEXCOORD0;
                 float4 positionHCS  : SV_POSITION;
+#if defined(MODE_DEPTH) || defined(MODE_BACK)
+                float4 posScreen : TEXCOORD0;
+#endif
             };
 
             CBUFFER_START(UnityPerMaterial)
             float4 _OutlineColor;
+            float4 _OutlineBackColor;
             float _OutlineSize;
             float _ZBias;
             CBUFFER_END
@@ -47,27 +51,25 @@ Shader "Custom/URP/Outline"
             {
                 Varyings OUT;
                 OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+
+#if defined(MODE_DEPTH) || defined(MODE_BACK)
                 OUT.posScreen = ComputeScreenPos(OUT.positionHCS);
+#endif
                 return OUT;
             }
 
             half4 frag(Varyings i) : SV_Target
             {
-#if OUTLINE_DEPTH_FEATURE
+#if MODE_DEPTH
                 i.posScreen.xyz /= i.posScreen.w;
 
                 float d = SampleSceneDepth(i.posScreen.xy);
-
                 float z = i.posScreen.z + _ZBias * (UNITY_REVERSED_Z == 0 ? -1 : 1);
+                float outline = (UNITY_REVERSED_Z == 0 ? z <= d : d <= z) ? 1 : 0;
 
-                if (UNITY_REVERSED_Z == 0 ? z <= d : d <= z)
-                {
-                    return 1;
-                }
-                else
-                {
-                    return 0;
-                }
+                return outline;
+#elif MODE_BACK
+                return half4(1, i.posScreen.z / i.posScreen.w, 0, 0);
 #else
                 return 1;
 #endif
@@ -81,6 +83,7 @@ Shader "Custom/URP/Outline"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma shader_feature_local MODE_COMMON MODE_DEPTH MODE_BACK
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
@@ -106,6 +109,7 @@ Shader "Custom/URP/Outline"
 
             CBUFFER_START(UnityPerMaterial)
             float4 _OutlineColor;
+            float4 _OutlineBackColor;
             float _OutlineSize;
             float _ZBias;
             CBUFFER_END
@@ -134,11 +138,13 @@ Shader "Custom/URP/Outline"
 
             half4 frag(Varyings i) : SV_Target
             {
+                float4 c = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv3.xy);
+
                 float p0 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv.xy).r;
                 float p1 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv.zw).r;
                 float p2 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv2.xy).r;
                 float p3 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv2.zw).r;
-                float p4 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv3.xy).r;
+                float p4 = c.r;
                 float p5 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv3.zw).r;
                 float p6 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv4.xy).r;
                 float p7 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv4.zw).r;
@@ -147,7 +153,11 @@ Shader "Custom/URP/Outline"
                 half edge = abs(-p0 + p2 - 2 * p3 + 2 * p5 - p6 + p8) +
                     abs(p0 + 2 * p1 + p2 - p6 - 2 * p7 - p8);
 
+#if MODE_BACK
+                return half4(edge, c.g, 0, 0);
+#else
                 return edge;
+#endif
             }
             ENDHLSL
         }
@@ -160,8 +170,10 @@ Shader "Custom/URP/Outline"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma shader_feature_local MODE_COMMON MODE_DEPTH MODE_BACK
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 
             struct Attributes
             {
@@ -180,6 +192,7 @@ Shader "Custom/URP/Outline"
 
             CBUFFER_START(UnityPerMaterial)
             float4 _OutlineColor;
+            float4 _OutlineBackColor;
             float _OutlineSize;
             float _ZBias;
             CBUFFER_END
@@ -196,13 +209,25 @@ Shader "Custom/URP/Outline"
 
             half4 frag(Varyings i) : SV_Target
             {
-                half outline = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv).r;
+                half4 c = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
+
+                half outline = c.r;
 
                 half4 color;
 
                 color.rgb = _OutlineColor.rgb;
                 color.a = outline * _OutlineColor.a;
 
+#if MODE_BACK
+                float d = SampleSceneDepth(i.uv);
+                float z = c.g + _ZBias * (UNITY_REVERSED_Z == 0 ? -1 : 1);
+
+                if (UNITY_REVERSED_Z == 0 ? d <= z : z <= d)
+                {
+                    color.rgb = _OutlineBackColor.rgb;
+                    color.a = outline * _OutlineBackColor.a;
+                }
+#endif
                 return color;
             }
             ENDHLSL

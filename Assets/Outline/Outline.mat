@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Outline
   m_Shader: {fileID: 4800000, guid: 7675050f2628b4685b23d11d01061388, type: 3}
-  m_ShaderKeywords: OUTLINE_DEPTH_FEATURE
+  m_ShaderKeywords: DEPTHMODE_COMMON MODE_BACK OUTLINE_DEPTH_BACK_FEATURE
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -76,6 +76,9 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - DepthMode: 0
+    - Mode: 2
+    - Outline: 2
     - _AlphaClip: 0
     - _Blend: 0
     - _BumpScale: 1
@@ -93,7 +96,7 @@ Material:
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _OutlineDepthFeature: 1
-    - _OutlineSize: 1.15
+    - _OutlineSize: 1.14
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
@@ -103,12 +106,14 @@ Material:
     - _SrcBlend: 1
     - _Surface: 0
     - _WorkflowMode: 1
+    - _ZBias: 0.01
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineColor: {r: 0, g: 0.35566974, b: 1, a: 1}
+    - _OutlineBackColor: {r: 0, g: 0.04313898, b: 1, a: 1}
+    - _OutlineColor: {r: 0.109803915, g: 1, b: 0, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &7742354976769745453

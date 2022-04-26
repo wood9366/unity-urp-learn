@@ -64,7 +64,7 @@ public class OutlineFeature : ScriptableRendererFeature
         {
             _desc = cameraTextureDescriptor;
 
-            var desc = new RenderTextureDescriptor(_desc.width, _desc.height, RenderTextureFormat.R8, 8);
+            var desc = new RenderTextureDescriptor(_desc.width, _desc.height, RenderTextureFormat.RG16, 0);
 
             // desc.msaaSamples = UniversalRenderPipeline.asset.msaaSampleCount;
 
@@ -110,7 +110,7 @@ public class OutlineFeature : ScriptableRendererFeature
 
             using (new ProfilingScope(cmd, _samplerEdgeDetect))
             {
-                var desc = new RenderTextureDescriptor(_desc.width, _desc.height, RenderTextureFormat.R8, 0);
+                var desc = new RenderTextureDescriptor(_desc.width, _desc.height, RenderTextureFormat.RG16, 0);
 
                 // desc.msaaSamples = UniversalRenderPipeline.asset.msaaSampleCount;
 
