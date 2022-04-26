@@ -4,6 +4,8 @@ Shader "Custom/URP/Outline"
     {
         _OutlineColor ("Outline Color", Color) = (0, 1, 0, 1)
         _OutlineSize ("Outline Size", Range(1, 10)) = 1
+        _ZBias ("Bias", Range(0.001, 0.01)) = 0.001
+        [Toggle(OUTLINE_DEPTH_FEATURE)] _OutlineDepthFeature ("Outline Depth Feature", Float) = 0
     }
 
     SubShader
@@ -16,8 +18,10 @@ Shader "Custom/URP/Outline"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma shader_feature_local __ OUTLINE_DEPTH_FEATURE
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 
             struct Attributes
             {
@@ -26,22 +30,43 @@ Shader "Custom/URP/Outline"
 
             struct Varyings
             {
+                float4 posScreen : TEXCOORD0;
                 float4 positionHCS  : SV_POSITION;
             };
 
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
 
+            float _ZBias;
+
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
                 OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+                OUT.posScreen = ComputeScreenPos(OUT.positionHCS);
                 return OUT;
             }
 
-            half4 frag() : SV_Target
+            half4 frag(Varyings i) : SV_Target
             {
+#if OUTLINE_DEPTH_FEATURE
+                i.posScreen.xyz /= i.posScreen.w;
+
+                float d = SampleSceneDepth(i.posScreen.xy);
+
+                float z = i.posScreen.z + _ZBias * (UNITY_REVERSED_Z == 0 ? -1 : 1);
+
+                if (UNITY_REVERSED_Z == 0 ? z <= d : d <= z)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+#else
                 return 1;
+#endif
             }
             ENDHLSL
         }
