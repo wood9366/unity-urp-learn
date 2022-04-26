@@ -34,10 +34,14 @@ Shader "Custom/URP/Outline"
                 float4 positionHCS  : SV_POSITION;
             };
 
+            CBUFFER_START(UnityPerMaterial)
+            float4 _OutlineColor;
+            float _OutlineSize;
+            float _ZBias;
+            CBUFFER_END
+
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
-
-            float _ZBias;
 
             Varyings vert(Attributes IN)
             {
@@ -100,7 +104,11 @@ Shader "Custom/URP/Outline"
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
 
+            CBUFFER_START(UnityPerMaterial)
+            float4 _OutlineColor;
             float _OutlineSize;
+            float _ZBias;
+            CBUFFER_END
 
             Varyings vert(Attributes i)
             {
@@ -171,7 +179,11 @@ Shader "Custom/URP/Outline"
             TEXTURE2D(_OutlineEdgeTex);
             SAMPLER(sampler_OutlineEdgeTex);
 
+            CBUFFER_START(UnityPerMaterial)
             float4 _OutlineColor;
+            float _OutlineSize;
+            float _ZBias;
+            CBUFFER_END
 
             Varyings vert(Attributes i)
             {
