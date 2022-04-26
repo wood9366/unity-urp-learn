@@ -1,3 +1,6 @@
 # Unity URP 实践
-## 精确描边
+## 描边
+
+Assets/Outline
+
 ![Outline](doc/Outline.png)
