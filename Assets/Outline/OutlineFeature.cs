@@ -133,18 +133,9 @@ public class OutlineFeature : ScriptableRendererFeature
 
             using (new ProfilingScope(cmd, _samplerDrawOutline))
             {
-                cmd.GetTemporaryRT(_rtMerge, _desc, FilterMode.Bilinear);
+                cmd.SetGlobalTexture("_MainTex", _rtEdge);
 
-                cmd.SetGlobalTexture("_MainTex", _rtCamera);
-
-                cmd.Blit(_rtCamera, _rtMerge, _settings.mat, 2);
-
-                cmd.ReleaseTemporaryRT(_rtEdge);
-
-                cmd.SetGlobalTexture("_MainTex", _rtMerge);
-                cmd.Blit(_rtMerge, _rtCamera);
-
-                cmd.ReleaseTemporaryRT(_rtMerge);
+                cmd.Blit(_rtEdge, _rtCamera, _settings.mat, 2);
             }
 
             context.ExecuteCommandBuffer(cmd);
@@ -159,7 +150,7 @@ public class OutlineFeature : ScriptableRendererFeature
     public override void Create()
     {
         _pass = new OutlineRenderPass(_settings);
-        _pass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
+        _pass.renderPassEvent = RenderPassEvent.BeforeRenderingTransparents;
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)

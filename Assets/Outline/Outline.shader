@@ -154,6 +154,8 @@ Shader "Custom/URP/Outline"
 
         Pass
         {
+            Blend SrcAlpha OneMinusSrcAlpha
+
             // Outline Pass
             HLSLPROGRAM
             #pragma vertex vert
@@ -176,9 +178,6 @@ Shader "Custom/URP/Outline"
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
 
-            TEXTURE2D(_OutlineEdgeTex);
-            SAMPLER(sampler_OutlineEdgeTex);
-
             CBUFFER_START(UnityPerMaterial)
             float4 _OutlineColor;
             float _OutlineSize;
@@ -197,13 +196,12 @@ Shader "Custom/URP/Outline"
 
             half4 frag(Varyings i) : SV_Target
             {
-                half4 screen = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
-                half outline = SAMPLE_TEXTURE2D(_OutlineEdgeTex, sampler_OutlineEdgeTex, i.uv).r;
+                half outline = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv).r;
 
                 half4 color;
 
-                color.rgb = lerp(screen.rgb, _OutlineColor.rgb, outline * _OutlineColor.a);
-                color.a = screen.a;
+                color.rgb = _OutlineColor.rgb;
+                color.a = outline * _OutlineColor.a;
 
                 return color;
             }
