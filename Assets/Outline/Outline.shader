@@ -34,6 +34,7 @@ Shader "Custom/URP/Outline"
                 float4 positionHCS  : SV_POSITION;
 #if defined(MODE_DEPTH) || defined(MODE_BACK)
                 float4 posScreen : TEXCOORD0;
+                float zView : TEXCOORD1;
 #endif
             };
 
@@ -54,6 +55,7 @@ Shader "Custom/URP/Outline"
 
 #if defined(MODE_DEPTH) || defined(MODE_BACK)
                 OUT.posScreen = ComputeScreenPos(OUT.positionHCS);
+                OUT.zView = -TransformWorldToView(TransformObjectToWorld(IN.positionOS.xyz)).z;
 #endif
                 return OUT;
             }
@@ -64,8 +66,11 @@ Shader "Custom/URP/Outline"
                 i.posScreen.xyz /= i.posScreen.w;
 
                 float d = SampleSceneDepth(i.posScreen.xy);
-                float z = i.posScreen.z + _ZBias * (UNITY_REVERSED_Z == 0 ? -1 : 1);
-                float outline = (UNITY_REVERSED_Z == 0 ? z <= d : d <= z) ? 1 : 0;
+
+                d = LinearEyeDepth(d, _ZBufferParams);
+
+                float z = i.zView - _ZBias * d;
+                float outline = z <= d ? 1 : 0;
 
                 return outline;
 #elif MODE_BACK
@@ -220,9 +225,12 @@ Shader "Custom/URP/Outline"
 
 #if MODE_BACK
                 float d = SampleSceneDepth(i.uv);
-                float z = c.g + _ZBias * (UNITY_REVERSED_Z == 0 ? -1 : 1);
+                d = LinearEyeDepth(d, _ZBufferParams);
+                float z = LinearEyeDepth(c.g, _ZBufferParams);
 
-                if (UNITY_REVERSED_Z == 0 ? d <= z : z <= d)
+                z = z - _ZBias * d;
+
+                if (z > d)
                 {
                     color.rgb = _OutlineBackColor.rgb;
                     color.a = outline * _OutlineBackColor.a;
