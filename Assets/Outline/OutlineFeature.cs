@@ -64,7 +64,7 @@ public class OutlineFeature : ScriptableRendererFeature
         {
             _desc = cameraTextureDescriptor;
 
-            var desc = new RenderTextureDescriptor(_desc.width, _desc.height, RenderTextureFormat.RG16, 0);
+            var desc = new RenderTextureDescriptor(_desc.width, _desc.height, RenderTextureFormat.RG16, 8);
 
             cmd.GetTemporaryRT(_rtShape, desc, FilterMode.Bilinear);
 
