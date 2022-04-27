@@ -66,8 +66,6 @@ public class OutlineFeature : ScriptableRendererFeature
 
             var desc = new RenderTextureDescriptor(_desc.width, _desc.height, RenderTextureFormat.RG16, 0);
 
-            // desc.msaaSamples = UniversalRenderPipeline.asset.msaaSampleCount;
-
             cmd.GetTemporaryRT(_rtShape, desc, FilterMode.Bilinear);
 
             ConfigureTarget(_rtShape);
@@ -110,9 +108,9 @@ public class OutlineFeature : ScriptableRendererFeature
 
             using (new ProfilingScope(cmd, _samplerEdgeDetect))
             {
-                var desc = new RenderTextureDescriptor(_desc.width, _desc.height, RenderTextureFormat.RG16, 0);
+                var desc = new RenderTextureDescriptor(_desc.width, _desc.height, RenderTextureFormat.RGHalf, 0);
 
-                // desc.msaaSamples = UniversalRenderPipeline.asset.msaaSampleCount;
+                desc.msaaSamples = UniversalRenderPipeline.asset.msaaSampleCount;
 
                 cmd.GetTemporaryRT(_rtEdge, desc, FilterMode.Bilinear);
 

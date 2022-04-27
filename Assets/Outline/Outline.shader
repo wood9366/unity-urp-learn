@@ -140,18 +140,18 @@ Shader "Custom/URP/Outline"
             {
                 float4 c = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv3.xy);
 
-                float p0 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv.xy).r;
-                float p1 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv.zw).r;
-                float p2 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv2.xy).r;
-                float p3 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv2.zw).r;
-                float p4 = c.r;
-                float p5 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv3.zw).r;
-                float p6 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv4.xy).r;
-                float p7 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv4.zw).r;
-                float p8 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv5.xy).r;
+                float p1 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv.xy).r;
+                float p2 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv.zw).r;
+                float p3 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv2.xy).r;
+                float p4 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv2.zw).r;
+                float p5 = c.r;
+                float p6 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv3.zw).r;
+                float p7 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv4.xy).r;
+                float p8 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv4.zw).r;
+                float p9 = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv5.xy).r;
 
-                half edge = abs(-p0 + p2 - 2 * p3 + 2 * p5 - p6 + p8) +
-                    abs(p0 + 2 * p1 + p2 - p6 - 2 * p7 - p8);
+                half edge = abs(p3 + 2 * p6 + p9 - (p1 + 2 * p4 + p7)) +
+                    abs(p1 + 2 * p2 + p3 - (p7 + 2 * p8 + p9));
 
 #if MODE_BACK
                 return half4(edge, c.g, 0, 0);
