@@ -5,7 +5,6 @@ Shader "Custom/URP/Outline"
         _OutlineColor ("Outline Color", Color) = (0, 1, 0, 1)
         _OutlineBackColor ("Outline Back Color", Color) = (1, 0, 0, 1)
         _OutlineSize ("Outline Size", Range(1, 10)) = 1
-        _ZBias ("Bias", Range(0.001, 0.01)) = 0.001
         [KeywordEnum(COMMON, DEPTH, BACK)] Mode ("Mode", Float) = 0
     }
 
@@ -34,7 +33,6 @@ Shader "Custom/URP/Outline"
                 float4 positionHCS  : SV_POSITION;
 #if defined(MODE_DEPTH) || defined(MODE_BACK)
                 float4 posScreen : TEXCOORD0;
-                float zView : TEXCOORD1;
 #endif
             };
 
@@ -42,7 +40,6 @@ Shader "Custom/URP/Outline"
             float4 _OutlineColor;
             float4 _OutlineBackColor;
             float _OutlineSize;
-            float _ZBias;
             CBUFFER_END
 
             TEXTURE2D(_MainTex);
@@ -55,7 +52,6 @@ Shader "Custom/URP/Outline"
 
 #if defined(MODE_DEPTH) || defined(MODE_BACK)
                 OUT.posScreen = ComputeScreenPos(OUT.positionHCS);
-                OUT.zView = -TransformWorldToView(TransformObjectToWorld(IN.positionOS.xyz)).z;
 #endif
                 return OUT;
             }
@@ -67,10 +63,7 @@ Shader "Custom/URP/Outline"
 
                 float d = SampleSceneDepth(i.posScreen.xy);
 
-                d = LinearEyeDepth(d, _ZBufferParams);
-
-                float z = i.zView - _ZBias * d;
-                float outline = z <= d ? 1 : 0;
+                float outline = abs(d - i.posScreen.z) < 0.0001 ? 1 : 0;
 
                 return outline;
 #elif MODE_BACK
@@ -116,7 +109,6 @@ Shader "Custom/URP/Outline"
             float4 _OutlineColor;
             float4 _OutlineBackColor;
             float _OutlineSize;
-            float _ZBias;
             CBUFFER_END
 
             Varyings vert(Attributes i)
@@ -199,7 +191,6 @@ Shader "Custom/URP/Outline"
             float4 _OutlineColor;
             float4 _OutlineBackColor;
             float _OutlineSize;
-            float _ZBias;
             CBUFFER_END
 
             Varyings vert(Attributes i)
@@ -225,12 +216,12 @@ Shader "Custom/URP/Outline"
 
 #if MODE_BACK
                 float d = SampleSceneDepth(i.uv);
+                float z = c.g;
+
                 d = LinearEyeDepth(d, _ZBufferParams);
-                float z = LinearEyeDepth(c.g, _ZBufferParams);
+                z = LinearEyeDepth(z, _ZBufferParams);
 
-                z = z - _ZBias * d;
-
-                if (z > d)
+                if (abs(d - z) > 1)
                 {
                     color.rgb = _OutlineBackColor.rgb;
                     color.a = outline * _OutlineBackColor.a;
