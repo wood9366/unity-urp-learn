@@ -11,4 +11,4 @@ Assets/Outline
 
 Assets/Dissolve
 
-![Dissolve](doc/Dissolve.png)
+![Dissolve](doc/Dissolve.gif)
