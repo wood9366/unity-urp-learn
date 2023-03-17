@@ -1,6 +1,4 @@
 ﻿# Unity工程
-.DS_Store
-/.vsconfig
 /Library
 /UserSettings
 /Logs
@@ -11,9 +9,13 @@
 *.csproj.user
 .vscode
 .vs
+.vsconfig
 .idea
 .gradle
 *.swp
+
+# MacOS
+.DS_Store
 
 # 发布目录
 /_iOS
