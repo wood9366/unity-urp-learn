@@ -1,4 +1,6 @@
 ﻿# Unity工程
+.DS_Store
+/.vsconfig
 /Library
 /UserSettings
 /Logs
